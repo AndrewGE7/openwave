@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>OpenWave — Brainwave Generator</title>
+  <meta name="description" content="OpenWave: an open, browser-based brainwave audio generator featuring binaural, monaural and isochronic modes with a session designer and WAV export." />
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#121a33; --ink:#eaf2ff; --muted:#9fb3d1; --accent:#6fd3ff; --good:#4ade80; --warn:#fbbf24; --bad:#ef4444;
+      --br:18px;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(60vw 60vw at 70% -10%, #1b2a58 0, #0b1020 60%);color:var(--ink);font:16px/1.4 Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+    header{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #1f2a4a;background:linear-gradient(180deg,#0e1731, #0b1020)}
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;letter-spacing:.3px}
+    .logo{width:36px;height:36px;border-radius:50%;background:conic-gradient(from 45deg,#6fd3ff,#7cf2d7,#6fd3ff);box-shadow:0 0 18px #6fd3ff55}
+    main{display:grid;grid-template-columns:380px 1fr;gap:18px;padding:18px}
+    @media(max-width:1000px){main{grid-template-columns:1fr}}
+    .card{background:rgba(17,26,51,.7);backdrop-filter: blur(8px);border:1px solid #1f2a4a;border-radius:var(--br);padding:16px;box-shadow:0 10px 30px #0008}
+    h2{margin:0 0 8px 0;font-size:18px}
+    h3{margin:22px 0 8px 0;font-size:14px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.12em}
+    label{display:block;font-size:13px;color:var(--muted);margin:8px 0 6px}
+    input,select,button,textarea{width:100%;background:#0a1430;color:var(--ink);border:1px solid #26355f;border-radius:12px;padding:10px 12px;outline:none}
+    input:focus,select:focus,textarea:focus{border-color:#3b82f6;box-shadow:0 0 0 3px #3b82f655}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    .muted{color:var(--muted)}
+    .btn{cursor:pointer;border:1px solid #35508d;background:linear-gradient(180deg,#10244a,#0b1a3a);font-weight:600;transition:.15s ease;box-shadow:0 6px 18px #0007}
+    .btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px #0009}
+    .btn:disabled{opacity:.55;cursor:not-allowed;filter:grayscale(.3)}
+    .btn.good{border-color:#1f8f54;background:linear-gradient(180deg,#0f3,#0a5)}
+    .btn.warn{border-color:#a97810;background:linear-gradient(180deg,#fbbf24,#b58900);color:#0b0f18}
+    .btn.bad{border-color:#7a1020;background:linear-gradient(180deg,#f43f5e,#9f1239)}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    th,td{padding:8px 10px;text-align:left;font-size:14px}
+    thead th{color:var(--muted);font-weight:600}
+    tbody tr{background:#0b1733;border:1px solid #253a6e;border-radius:10px}
+    tbody tr td:first-child{border-radius:10px 0 0 10px}
+    tbody tr td:last-child{border-radius:0 10px 10px 0}
+    .pill{display:inline-block;padding:2px 8px;border-radius:999px;background:#13224a;color:#8ecbff;font-size:12px}
+    .flex{display:flex;gap:10px;align-items:center}
+    .right{justify-content:flex-end}
+    .grow{flex:1}
+    .footer{padding:10px 16px;color:var(--muted);font-size:13px}
+    .link{color:#8ecbff;text-decoration:none}
+    .link:hover{text-decoration:underline}
+    .strobe-warning{border:1px dashed #a97810;padding:10px;border-radius:12px;background:#2b1f00;color:#f6e9c0;margin-top:10px}
+    .badge{padding:2px 6px;border-radius:8px;background:#0f1d3d;border:1px solid #193060;color:#8ecbff;font-size:12px}
+    .tiny{font-size:12px}
+    .site-return{width:auto;display:inline-flex;align-items:center;padding:8px 11px;border:1px solid #35508d;border-radius:999px;color:#bceeff;text-decoration:none;font-size:12px;white-space:nowrap}
+    .site-return:hover{border-color:#6fd3ff;background:#10244a}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><div class="logo"></div><div>OpenWave <span class="muted tiny">– Brainwave Generator</span></div></div>
+    <div class="flex right">
+      <a class="site-return" href="https://ageoldllc.com/projects/openwave">Project page</a>
+      <button id="btnSavePreset" class="btn" title="Save current session as a preset">Save Preset</button>
+      <button id="btnExport" class="btn" title="Render session to WAV file">Export WAV</button>
+      <button id="btnPlay" class="btn good" title="Start playback">Play</button>
+      <button id="btnStop" class="btn bad" disabled title="Stop playback">Stop</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Session Designer</h2>
+      <p class="muted tiny">Build a timeline of segments. Each segment can be binaural, monaural (AM), isochronic pulses, or noise. Add ramps to glide parameters over time.</p>
+
+      <h3>Add / Edit Segment</h3>
+      <div class="row">
+        <div>
+          <label>Mode</label>
+          <select id="mode">
+            <option value="binaural">Binaural</option>
+            <option value="monaural">Monaural (AM)</option>
+            <option value="isochronic">Isochronic</option>
+            <option value="noise">Noise</option>
+          </select>
+        </div>
+        <div>
+          <label>Duration (sec)</label>
+          <input id="duration" type="number" min="1" value="120"/>
+        </div>
+      </div>
+
+      <div id="toneFields">
+        <div class="row3">
+          <div>
+            <label>Carrier (Hz)</label>
+            <input id="carrier" type="number" min="20" max="1200" value="220"/>
+          </div>
+          <div>
+            <label>Beat / Rate (Hz)</label>
+            <input id="beat" type="number" min="0.1" step="0.1" max="40" value="10"/>
+          </div>
+          <div>
+            <label>Waveform</label>
+            <select id="waveform">
+              <option value="sine">Sine</option>
+              <option value="triangle">Triangle</option>
+              <option value="sawtooth">Sawtooth</option>
+              <option value="square">Square</option>
+            </select>
+          </div>
+        </div>
+        <div class="row3">
+          <div>
+            <label>Depth / Duty (0-1)</label>
+            <input id="depth" type="number" min="0" max="1" step="0.05" value="0.7"/>
+          </div>
+          <div>
+            <label>Pan (-1 L … 1 R)</label>
+            <input id="pan" type="number" min="-1" max="1" step="0.1" value="0"/>
+          </div>
+          <div>
+            <label>Volume (0-1)</label>
+            <input id="volume" type="number" min="0" max="1" step="0.05" value="0.4"/>
+          </div>
+        </div>
+      </div>
+
+      <div id="noiseFields" style="display:none">
+        <div class="row3">
+          <div>
+            <label>Noise Type</label>
+            <select id="noiseType">
+              <option value="white">White</option>
+              <option value="pink">Pink</option>
+              <option value="brown">Brown</option>
+            </select>
+          </div>
+          <div>
+            <label>Volume (0-1)</label>
+            <input id="noiseVol" type="number" min="0" max="1" step="0.05" value="0.25"/>
+          </div>
+          <div>
+            <label>Pan (-1 L … 1 R)</label>
+            <input id="noisePan" type="number" min="-1" max="1" step="0.1" value="0"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Ramp To (optional)</label>
+          <input id="rampTo" placeholder="carrier,beat,depth,vol e.g. 180,8,0.5,0.3"/>
+        </div>
+        <div>
+          <label class="flex">Preset Templates 
+            <span class="grow"></span>
+            <span class="badge" title="Safe defaults">gentle</span>
+          </label>
+          <select id="template">
+            <option value="">— choose a template —</option>
+            <option value="focus">Focus 20 min (12→16 Hz)</option>
+            <option value="relax">Relax 30 min (12→8 Hz)</option>
+            <option value="sleep">Sleep 45 min (10→3 Hz)</option>
+            <option value="powernap">Power Nap 25 min (12→5→12 Hz)</option>
+            <option value="custom">Custom single segment</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex right" style="margin-top:10px">
+        <button id="btnAdd" class="btn">Add Segment</button>
+        <button id="btnUpdate" class="btn" disabled>Update Selected</button>
+        <button id="btnClear" class="btn warn">Clear Session</button>
+      </div>
+
+      <h3>Timeline</h3>
+      <div style="overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Mode</th><th>Dur</th><th>Carrier</th><th>Beat/Rate</th><th>Depth</th><th>Vol</th><th>Pan</th><th>Ramp→</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="flex right">
+        <span class="muted tiny" id="sessionMeta">0 segments · 00:00</span>
+      </div>
+
+      <div class="strobe-warning tiny">
+        <strong>Safety Notice:</strong> This tool generates audio tones and optional visual strobes. People with photosensitive epilepsy or certain neurological conditions may be triggered by flicker or repetitive tones. Start quietly, use moderate sessions, and stop immediately if you feel discomfort. This is not medical advice.
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Presets & Visualizer</h2>
+      <div class="row">
+        <div>
+          <label>Load Preset</label>
+          <select id="presetSelect"></select>
+        </div>
+        <div>
+          <label>Preset Actions</label>
+          <div class="flex">
+            <button id="btnLoadPreset" class="btn">Load</button>
+            <button id="btnDeletePreset" class="btn bad">Delete</button>
+          </div>
+        </div>
+      </div>
+      <canvas id="viz" height="160" style="width:100%;border-radius:14px;margin-top:12px;background:linear-gradient(180deg,#071124,#0b1428);border:1px solid #1f2a4a"></canvas>
+      <div class="footer">
+        <span class="muted">Visualizer shows amplitude & programmed beat/rate over time (not real audio output).</span>
+      </div>
+      <h3>Minimal Strobe</h3>
+      <div class="row">
+        <div>
+          <label>Enable Strobe</label>
+          <select id="strobeEnable">
+            <option value="off">Off (recommended)</option>
+            <option value="on">On (caution)</option>
+          </select>
+        </div>
+        <div>
+          <label>Strobe Max Rate (Hz, ≤12 recommended)</label>
+          <input id="strobeRate" type="number" min="0" max="20" step="0.5" value="8"/>
+        </div>
+      </div>
+      <div id="strobeBox" style="height:80px;border-radius:12px;border:1px dashed #244060;margin-top:10px;display:flex;align-items:center;justify-content:center;color:#8ecbff">
+        Strobe preview
+      </div>
+    </section>
+  </main>
+
+  <div class="footer" style="text-align:center">
+    <span class="muted tiny">OpenWave is original software inspired by classic brainwave tools. © 2025 MIT License.</span>
+    · <a class="link" href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Audio_API" target="_blank" rel="noopener">Web Audio API</a>
+  </div>
+
+  <script src="app.js"></script>
+  <script src="openwave_ultimate_pack.js"></script>
+  <script src="openwave_preset_notes.js"></script>
+  <link id="ow-theme-link" rel="stylesheet" href="midnight.css">
+  <script src="openwave_theme_switcher.js"></script>
+  <script src="openwave_preset_descriptions.js"></script>
+  <script src="openwave_csv_helper.js"></script>
+
+    <footer id="ow-disclaimer" style="margin-top:40px;padding:12px;background:var(--panel);color:var(--muted);font-size:12px;border-top:1px solid #2c3e50;">
+      <strong>Disclaimer:</strong> OpenWave is provided for comfort, relaxation, focus, noise masking, and experimentation only.
+      It is not a medical device and is not intended to diagnose, treat, cure, or prevent any disease.
+      It does not block or neutralize EMF or radiation.
+      Use at your own discretion. Not affiliated with Brainwave Generator or Noromaa Solutions.
+    </footer>
+    
+  <script src="openwave_disclaimer_injector.js"></script>
+</body>
+</html>

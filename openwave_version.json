@@ -1,0 +1,8 @@
+{
+  "app": "OpenWave Web",
+  "channel": "stable",
+  "version": "1.0.0",
+  "build": 1,
+  "released": "2025-08-17",
+  "notes": "Initial GitHub Pages release with web auto-updater."
+}
