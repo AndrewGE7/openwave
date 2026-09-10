@@ -1,12 +1,10 @@
 # OpenWave GitHub Pages
 
-The repository includes a GitHub Actions workflow that publishes this static web app.
+OpenWave is a build-free static web application and can be published directly from the repository root.
 
-After the repository is created:
-
-1. Push this package to the `main` branch.
-2. In **Settings → Pages**, choose **GitHub Actions** as the source.
-3. Run the workflow or push a commit to `main`.
+1. Open **Settings → Pages**.
+2. Under **Build and deployment**, choose **Deploy from a branch**.
+3. Select the `main` branch and `/ (root)` folder, then save.
 4. Update `openwave_version.json` for each tagged web release.
 
-The previous placeholder updater was intentionally removed until the final repository URL and release policy are active. This prevents unnecessary failed requests in the public app.
+The placeholder auto-updater remains disabled until the release policy is active. This prevents unnecessary failed requests in the public app.
